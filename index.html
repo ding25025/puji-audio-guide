@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-title" content="小護法養成記">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="description" content="普濟精舍　護博會展覽《小護法養成記》語音導覽，四個展區的語音與逐字稿。">
+<meta name="description" content="普濟精舍　護博會展覽《小護法養成記》語音導覽，開場、五大核心與四個展區的語音與逐字稿。">
 <style>
   :root{
     --bg:#f8f6f1; --card:#fff; --fg:#211f1a; --muted:#6f6a5e;
@@ -144,7 +144,7 @@
 
   footer{margin-top:20px; color:var(--muted); font-size:.78rem; text-align:center}
 
-  /* 矮螢幕再收緊一點，讓四站維持在一畫面內 */
+  /* 矮螢幕再收緊一點，讓卡片不要拉得太長 */
   @media (max-height:680px){
     body{padding-top:12px}
     header{margin-bottom:10px}
@@ -184,7 +184,25 @@
 <script>
 /* ─── 內容在這裡改 ───────────────────────────── */
 const TRACKS = [
-  { id:'a1', title:'啟蒙區', label:'第一站', src:'audio1.mp3', text:
+  { id:'a1', title:'開場與調研', label:'導覽開始', src:'audio1.mp3', text:
+`歡迎來到普濟精舍《小護法養成記》的攤位。
+
+普濟精舍成立已經三十四年了。您可能不知道，精舍有一群孩子從小在這裡長大，現在都已經能獨當一面，甚至在山上承擔重要的執事。
+
+說到這裡，您可能會好奇：年輕人要學佛多不容易啊，究竟精舍做了什麼，能讓這群年輕人願意一直留下來？
+
+為了找出答案，我們特別做了一份「佛化家庭」調研。展板上的數據顯示，普濟目前有一百六十四戶佛化家庭，總人數高達四百一十人。其中以「二代家庭」的八十二戶為最高，這正是精舍兒童與青年的主要來源，而最大的家族甚至有十個人。這證實了，佛化家庭成為精舍最穩定的基礎。` },
+
+  { id:'a2', title:'五大核心', label:'養成心法', src:'audio2.mp3', text:
+`那麼，精舍到底是怎麼護念這群孩子的呢？秘密就在這裡，「小護法養成的五大核心」。
+
+第一，是豐富多元的學習內容。第二，是溫暖的環境氛圍。第三，是有興趣的執事內容。第四，是熟悉的同參道友。第五，也是最重要的，就是有學習的楷模。
+
+這五大核心的目的，都是在闡揚覺的教育。
+
+運用這五個核心，我們把青年的成長歷程，歸納成「啟蒙」、「歷練」、「叛逆」和「成長」四個階段。接下來每一個階段的展板上方，都可以看到這五個核心的光譜有不同比重的呈現。` },
+
+  { id:'a3', title:'啟蒙區', label:'第一站', src:'audio3.mp3', text:
 `歡迎來到《小護法養成記》的第一站，啟蒙區。
 
 在孩子心中，精舍是個安全又好玩的地方。剛接觸精舍的時候，我們用豐富多元的學習內容，還有溫暖的環境氛圍來引導他們。
@@ -193,7 +211,7 @@ const TRACKS = [
 
 展板上留著孩子們的回饋，這些心聲，就是精舍給他們最真實的感受。` },
 
-  { id:'a2', title:'歷練區', label:'第二站', src:'audio2.mp3', text:
+  { id:'a4', title:'歷練區', label:'第二站', src:'audio4.mp3', text:
 `這裡是第二站，歷練區。
 
 隨著孩子慢慢長大，光是好玩已經不夠了，他們開始渴望被認同。
@@ -202,7 +220,7 @@ const TRACKS = [
 
 展板上這兩則漫畫，可不是捏造的，而是他們在錯誤中成長的真實故事。我們還把它做成了一本漫畫書，歡迎您到漫畫區自由翻閱。` },
 
-  { id:'a3', title:'叛逆區', label:'第三站', src:'audio3.mp3', text:
+  { id:'a5', title:'叛逆區', label:'第三站', src:'audio5.mp3', text:
 `這裡是第三站，叛逆區。
 
 「別再問了，我沒有要去啦！」這句話，家裡有青少年的人，聽起來是不是特別熟悉？
@@ -213,7 +231,7 @@ const TRACKS = [
 
 旁邊還有「煩惱法門對對碰」，這些問題都是青年最常遇到的煩惱，歡迎您動手翻開答案，看看老和尚教我們怎麼用智慧解題。` },
 
-  { id:'a4', title:'成長區', label:'第四站', src:'audio4.mp3', text:
+  { id:'a6', title:'成長區', label:'第四站', src:'audio6.mp3', text:
 `這裡是最後一站，成長區。
 
 度過了叛逆期的風雨，孩子終於成熟了。
@@ -247,7 +265,7 @@ const paras = s => esc(s).trim().split(/\n\s*\n/).map(p => `<p>${p.replace(/\n/g
 const list = document.getElementById('list');
 let current = null;
 
-// 一次只展開一段，四張卡片才留得住在同一畫面
+// 一次只展開一段，卡片才不會被逐字稿撐開到看不見別站
 const setOpen = (li, on) => {
   li.classList.toggle('open', on);
   li.querySelector('.exp').setAttribute('aria-expanded', on ? 'true' : 'false');
@@ -406,7 +424,7 @@ const setBig = (on, save) => {
 bigger.onclick = () => setBig(!root.classList.contains('big'), true);
 setBig(root.classList.contains('big'), false);   // head 裡已先套用，這裡只補上按鈕狀態
 
-// 網址帶 #a3 之類時，展開該區並標示（iOS 不允許自動播放，仍需點一下）
+// 網址帶 #a5 之類時，展開該區並標示（iOS 不允許自動播放，仍需點一下）
 const hash = location.hash.slice(1);
 if (hash) {
   const el = document.getElementById(hash);
