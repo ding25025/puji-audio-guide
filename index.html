@@ -18,6 +18,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-title" content="小護法養成記">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="description" content="普濟精舍　護博會展覽《小護法養成記》語音導覽，四個展區的語音與逐字稿。">
 <style>
   :root{
@@ -88,11 +89,10 @@
 
   /* 前後跳轉 10 秒 */
   button.s{
-    flex:0 0 auto; width:32px; height:40px; border:0; padding:0; background:transparent;
-    color:var(--muted); cursor:pointer; display:grid; place-items:center;
+    position:relative; flex:0 0 auto; width:32px; height:40px; border:0; padding:0;
+    background:transparent; color:var(--muted); cursor:pointer; display:grid; place-items:center;
     transition:transform .12s ease, color .2s ease; -webkit-tap-highlight-color:transparent;
   }
-  button.s{position:relative}
   button.s::after{content:''; position:absolute; inset:-2px -4px}   /* 把可按範圍撐大 */
   button.s:active{transform:scale(.88)}
   li.active button.s{color:var(--fg)}
@@ -109,7 +109,8 @@
   .t{flex:1 1 auto; min-width:0; font-weight:600; font-size:1rem; line-height:1.35; letter-spacing:.02em}
   .t small{display:block; margin-top:1px; font-weight:400; font-size:.72rem;
            color:var(--muted); letter-spacing:.06em}
-  .d{flex:0 0 auto; font-variant-numeric:tabular-nums; font-size:.76rem; color:var(--muted)}
+  .d{flex:0 0 auto; min-width:3.1em; text-align:right;
+     font-variant-numeric:tabular-nums; font-size:.76rem; color:var(--muted)}
   .doc{
     flex:0 0 auto; display:inline-flex; align-items:center; gap:3px; white-space:nowrap;
     padding:4px 8px 4px 11px; border:1px solid var(--line); border-radius:99px;
@@ -135,9 +136,10 @@
 
   /* 逐字稿：預設收合，按下標題或開始播放才展開 */
   .body{display:grid; grid-template-rows:0fr; transition:grid-template-rows .3s ease}
-  .body > div{overflow:hidden; min-height:0; padding-top:12px}
+  .body > div{overflow:hidden; min-height:0}
   li.open .body{grid-template-rows:1fr}
   .body p{margin:0 0 .75em; font-size:.95rem; line-height:1.85}
+  .body p:first-child{margin-top:12px}
   .body p:last-child{margin-bottom:0}
 
   footer{margin-top:20px; color:var(--muted); font-size:.78rem; text-align:center}
@@ -154,7 +156,8 @@
   }
   @media (prefers-contrast:more){
     :root{--muted:#4a463c; --line:#a9a291}
-    @media (prefers-color-scheme:dark){ :root{--muted:#d3cdbf; --line:#615c4e} }
+    @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){--muted:#d3cdbf; --line:#615c4e} }
+    :root[data-theme="dark"]{--muted:#d3cdbf; --line:#615c4e}
     li{border-width:2px}
   }
   @media (prefers-reduced-motion:reduce){
@@ -371,7 +374,9 @@ const MOON = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
 </svg>`;
 const root = document.documentElement;
 const themeBtn = document.getElementById('theme');
-const sysDark = matchMedia('(prefers-color-scheme:dark)');
+const sysDark = window.matchMedia
+  ? matchMedia('(prefers-color-scheme:dark)')
+  : { matches:false, addEventListener(){} };      // 舊瀏覽器沒有 matchMedia 時的退路
 const isDark = () => {
   const set = root.getAttribute('data-theme');
   return set ? set === 'dark' : sysDark.matches;
@@ -393,13 +398,13 @@ paintTheme();
 
 // 大字開關：放大整頁字級，選擇會記在這支手機上
 const bigger = document.getElementById('bigger');
-const setBig = on => {
+const setBig = (on, save) => {
   root.classList.toggle('big', on);
   bigger.setAttribute('aria-pressed', on ? 'true' : 'false');
-  try { localStorage.setItem('big', on ? '1' : '0'); } catch (e) {}
+  if (save) { try { localStorage.setItem('big', on ? '1' : '0'); } catch (e) {} }
 };
-bigger.onclick = () => setBig(!root.classList.contains('big'));
-setBig(root.classList.contains('big'));   // head 裡已先套用，這裡只補上按鈕狀態
+bigger.onclick = () => setBig(!root.classList.contains('big'), true);
+setBig(root.classList.contains('big'), false);   // head 裡已先套用，這裡只補上按鈕狀態
 
 // 網址帶 #a3 之類時，展開該區並標示（iOS 不允許自動播放，仍需點一下）
 const hash = location.hash.slice(1);
