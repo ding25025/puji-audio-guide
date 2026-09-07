@@ -13,19 +13,29 @@ SUPER  = 4                      # 先畫大張再縮小，邊緣才平滑
 GOLD_1 = (176, 138, 66)         # 底色漸層（上）
 GOLD_2 = (122,  92, 39)         # 底色漸層（下）
 LEAF   = (253, 250, 242)        # 葉子
-VEIN   = (150, 116, 54)         # 葉脈
+VEIN   = (163, 130, 64)         # 葉脈
 
 # 菩提葉輪廓：從頂端凹口出發，沿右側繞到葉尖，左側鏡像
-N = (256, 156)                                  # 頂端凹口（心形的缺口）
-R = (452, 268)                                  # 右側最寬處
-T = (256, 512)                                  # 葉尖
-SEG = [(N, (332,  58), (446, 126), R),          # 右上：肩膀圓一點
-       (R, (452, 388), (346, 430), T)]          # 右下：一路收成尖角
+N = (256, 150)                                  # 葉基凹口
+R = (434, 262)                                  # 葉身最寬處
+T = (256, 522)                                  # 葉尖
+SEG = [(N, (318,  66), (428, 130), R),          # 葉身上緣：肩膀圓潤一點
+       (R, (438, 386), (336, 438), T)]          # 下緣一路收成尖角
 SCALE = .86                                     # 整片葉子內縮，不要頂到邊
-OY    = -28                                     # 往上挪一點，視覺才置中
-VEIN_A, VEIN_B = (256, 252), (256, 436)         # 中脈起訖
+OY    = -26                                     # 往上挪一點，視覺才置中
+VEIN_A, VEIN_B = (256, 196), (256, 470)         # 中脈：從葉基一路貫到葉尖
+RIBS = [((256, 215), (323, 236), (390, 272)),   # 側脈：從近葉基處就開始分出，四對均勻散開
+        ((256, 272), (324, 294), (392, 330)),   # 越靠葉基的越長越平
+        ((256, 330), (314, 350), (372, 384)),   # （起點、弧的控制點、終點；左半鏡像）
+        ((256, 388), (293, 404), (330, 432))]
 mir = lambda p: (S - p[0], p[1])                # 左右鏡像
 fit = lambda p: (S/2 + (p[0] - S/2) * SCALE, S/2 + (p[1] - S/2) * SCALE + OY)
+
+
+def quad(p0, p1, p2, n=26):
+    return [((1-t)**2*p0[0] + 2*(1-t)*t*p1[0] + t*t*p2[0],
+             (1-t)**2*p0[1] + 2*(1-t)*t*p1[1] + t*t*p2[1])
+            for t in (i / n for i in range(n + 1))]
 
 
 def cubic(p0, p1, p2, p3, n=90):
@@ -71,7 +81,12 @@ def render(size, rounded=True):
     img.polygon([(x * k, y * k) for x, y in outline()], fill=LEAF + (255,))
     line = lambda p, q, w: img.line([(fit(p)[0] * k, fit(p)[1] * k), (fit(q)[0] * k, fit(q)[1] * k)],
                                     fill=VEIN + (255,), width=max(1, round(w * k)))
-    line(VEIN_A, VEIN_B, 13)
+    line(VEIN_A, VEIN_B, 9)
+    if size >= 96:                              # 32px 下側脈只會糊掉
+        for rib in RIBS:
+            for pts in (rib, [mir(q) for q in rib]):
+                img.line([(fit(q)[0] * k, fit(q)[1] * k) for q in quad(*pts)],
+                         fill=VEIN + (255,), width=max(1, round(5 * k)), joint="curve")
     return base.resize((size, size), Image.LANCZOS)
 
 
@@ -87,7 +102,12 @@ open("icon.svg", "w").write(f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox=
   </linearGradient></defs>
   <rect width="{S}" height="{S}" rx="{round(S * 0.22)}" fill="url(#g)"/>
   <path d="{svg_path()}" fill="#{"%02x%02x%02x" % LEAF}"/>
-  <path d="M{"%g %g" % fit(VEIN_A)} L{"%g %g" % fit(VEIN_B)}" stroke="#{"%02x%02x%02x" % VEIN}" stroke-width="13" stroke-linecap="round" fill="none"/>
+  <g stroke="#{"%02x%02x%02x" % VEIN}" stroke-linecap="round" fill="none">
+    <path d="M{"%g %g" % fit(VEIN_A)} L{"%g %g" % fit(VEIN_B)}" stroke-width="9"/>
+    {"".join('<path d="M%g %g Q%g %g %g %g" stroke-width="5"/>' % (fit(a) + fit(c) + fit(b)) +
+             '<path d="M%g %g Q%g %g %g %g" stroke-width="5"/>' % (fit(mir(a)) + fit(mir(c)) + fit(mir(b)))
+             for a, c, b in RIBS)}
+  </g>
 </svg>
 ''')
 print("產生 icon.svg")

@@ -4,6 +4,9 @@
     <stop offset="1" stop-color="#7a5c27"/>
   </linearGradient></defs>
   <rect width="512" height="512" rx="113" fill="url(#g)"/>
-  <path d="M256 142 C321.36 57.72 419.4 116.2 424.56 238.32 C424.56 341.52 333.4 377.64 256 448.16 C178.6 377.64 87.44 341.52 87.44 238.32 C92.6 116.2 190.64 57.72 256 142 Z" fill="#fdfaf2"/>
-  <path d="M256 224.56 L256 382.8" stroke="#967436" stroke-width="13" stroke-linecap="round" fill="none"/>
+  <path d="M256 138.84 C309.32 66.6 403.92 121.64 409.08 235.16 C412.52 341.8 324.8 386.52 256 458.76 C187.2 386.52 99.48 341.8 102.92 235.16 C108.08 121.64 202.68 66.6 256 138.84 Z" fill="#fdfaf2"/>
+  <g stroke="#a38240" stroke-linecap="round" fill="none">
+    <path d="M256 178.4 L256 414.04" stroke-width="9"/>
+    <path d="M256 194.74 Q313.62 212.8 371.24 243.76" stroke-width="5"/><path d="M256 194.74 Q198.38 212.8 140.76 243.76" stroke-width="5"/><path d="M256 243.76 Q314.48 262.68 372.96 293.64" stroke-width="5"/><path d="M256 243.76 Q197.52 262.68 139.04 293.64" stroke-width="5"/><path d="M256 293.64 Q305.88 310.84 355.76 340.08" stroke-width="5"/><path d="M256 293.64 Q206.12 310.84 156.24 340.08" stroke-width="5"/><path d="M256 343.52 Q287.82 357.28 319.64 381.36" stroke-width="5"/><path d="M256 343.52 Q224.18 357.28 192.36 381.36" stroke-width="5"/>
+  </g>
 </svg>
