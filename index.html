@@ -3,29 +3,64 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f8f6f1" media="(prefers-color-scheme:light)">
-<meta name="theme-color" content="#17161a" media="(prefers-color-scheme:dark)">
+<meta name="theme-color" id="tc" content="#f8f6f1">
+<script>
+  try{
+    var t = localStorage.getItem('theme');
+    if (t) document.documentElement.setAttribute('data-theme', t);
+    if (localStorage.getItem('big') === '1') document.documentElement.classList.add('big');
+  }catch(e){}
+</script>
 <title>小護法養成記</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="小護法養成記">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="description" content="普濟精舍　護博會展覽《小護法養成記》語音導覽，四個展區的語音與逐字稿。">
 <style>
   :root{
     --bg:#f8f6f1; --card:#fff; --fg:#211f1a; --muted:#6f6a5e;
     --accent:#8a6a2f; --accent-fg:#fff; --track:#e6e1d6; --line:#e8e3d8;
   }
+  /* 深色：跟隨系統，但 data-theme 指定時以它為準 */
   @media (prefers-color-scheme:dark){
-    :root{ --bg:#17161a; --card:#201f24; --fg:#f1efe9; --muted:#9d988c;
-           --accent:#c9a25a; --accent-fg:#1b1a17; --track:#35333b; --line:#2d2b33; }
+    :root:not([data-theme="light"]){
+      --bg:#17161a; --card:#201f24; --fg:#f1efe9; --muted:#9d988c;
+      --accent:#c9a25a; --accent-fg:#1b1a17; --track:#35333b; --line:#2d2b33;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#17161a; --card:#201f24; --fg:#f1efe9; --muted:#9d988c;
+    --accent:#c9a25a; --accent-fg:#1b1a17; --track:#35333b; --line:#2d2b33;
   }
   *{box-sizing:border-box}
-  html{-webkit-text-size-adjust:100%}
+  html{-webkit-text-size-adjust:100%; font-size:16px}
+  html.big{font-size:19.5px}          /* 「大字」開關 */
   body{
     margin:0; min-height:100dvh; background:var(--bg); color:var(--fg);
-    font:17px/1.8 -apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Segoe UI",sans-serif;
+    font:1.0625rem/1.8 -apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Segoe UI",sans-serif;
     display:flex; flex-direction:column; align-items:center;
     padding:max(18px,env(safe-area-inset-top)) 16px calc(22px + env(safe-area-inset-bottom));
   }
   header{text-align:center; margin:2px 0 16px; max-width:460px}
   h1{font-size:1.3rem; font-weight:600; margin:0 0 4px; letter-spacing:.02em}
   header .sub{margin:0; color:var(--muted); font-size:.82rem; letter-spacing:.03em}
+
+  .tools{width:100%; max-width:460px; display:flex; justify-content:flex-end; gap:8px; margin:-6px 0 8px}
+  .tool{
+    display:inline-flex; align-items:center; gap:5px;
+    border:1px solid var(--line); background:var(--card); color:var(--muted);
+    border-radius:99px; padding:5px 12px; font-size:.78rem; cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .tool svg{width:15px; height:15px; flex:0 0 auto}
+  .tool .lb{min-width:2.4em; text-align:center}
+  .tool[aria-pressed="true"]{
+    background:color-mix(in srgb,var(--accent) 14%,transparent);
+    border-color:color-mix(in srgb,var(--accent) 50%,transparent); color:var(--fg);
+  }
 
   ul{list-style:none; padding:0; margin:0; width:100%; max-width:460px;
      display:flex; flex-direction:column; gap:10px}
@@ -57,6 +92,8 @@
     color:var(--muted); cursor:pointer; display:grid; place-items:center;
     transition:transform .12s ease, color .2s ease; -webkit-tap-highlight-color:transparent;
   }
+  button.s{position:relative}
+  button.s::after{content:''; position:absolute; inset:-2px -4px}   /* 把可按範圍撐大 */
   button.s:active{transform:scale(.88)}
   li.active button.s{color:var(--fg)}
   button.s svg{width:20px; height:20px; fill:currentColor}
@@ -72,11 +109,23 @@
   .t{flex:1 1 auto; min-width:0; font-weight:600; font-size:1rem; line-height:1.35; letter-spacing:.02em}
   .t small{display:block; margin-top:1px; font-weight:400; font-size:.72rem;
            color:var(--muted); letter-spacing:.06em}
-  .d{flex:0 0 auto; font-variant-numeric:tabular-nums; font-size:.8rem; color:var(--muted)}
-  .chev{flex:0 0 auto; width:16px; height:16px; fill:var(--muted); transition:transform .3s ease}
+  .d{flex:0 0 auto; font-variant-numeric:tabular-nums; font-size:.76rem; color:var(--muted)}
+  .doc{
+    flex:0 0 auto; display:inline-flex; align-items:center; gap:3px; white-space:nowrap;
+    padding:4px 8px 4px 11px; border:1px solid var(--line); border-radius:99px;
+    font-size:.75rem; line-height:1.25; color:var(--muted);
+    transition:background .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .doc .lb{display:inline-block; min-width:3.2em; text-align:center}
+  li.open .doc{
+    background:color-mix(in srgb,var(--accent) 14%,transparent);
+    border-color:color-mix(in srgb,var(--accent) 50%,transparent); color:var(--fg);
+  }
+  .chev{flex:0 0 auto; width:14px; height:14px; fill:currentColor; transition:transform .3s ease}
   li.open .chev{transform:rotate(180deg)}
 
-  .seek{margin-top:6px; height:18px; display:flex; align-items:center; cursor:pointer;
+  .prog{display:flex; align-items:center; gap:9px; margin-top:6px}
+  .seek{flex:1 1 auto; height:18px; display:flex; align-items:center; cursor:pointer;
         touch-action:none; -webkit-tap-highlight-color:transparent}
   .seek:focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:6px}
   .bar{flex:1 1 auto; height:4px; border-radius:99px; background:var(--track);
@@ -103,6 +152,11 @@
     li{padding:8px 12px 10px}
     footer{margin-top:14px}
   }
+  @media (prefers-contrast:more){
+    :root{--muted:#4a463c; --line:#a9a291}
+    @media (prefers-color-scheme:dark){ :root{--muted:#d3cdbf; --line:#615c4e} }
+    li{border-width:2px}
+  }
   @media (prefers-reduced-motion:reduce){
     *{transition-duration:.01ms !important; animation-duration:.01ms !important}
   }
@@ -114,6 +168,11 @@
   <h1>小護法養成記</h1>
   <p class="sub">普濟精舍　護博會展覽　語音導覽</p>
 </header>
+
+<div class="tools">
+  <button class="tool" id="theme"></button>
+  <button class="tool" id="bigger" aria-pressed="false"><span class="lb">大字</span></button>
+</div>
 
 <ul id="list"></ul>
 
@@ -189,6 +248,7 @@ let current = null;
 const setOpen = (li, on) => {
   li.classList.toggle('open', on);
   li.querySelector('.exp').setAttribute('aria-expanded', on ? 'true' : 'false');
+  li.querySelector('.doc .lb').textContent = on ? '收合' : '逐字稿';
   if (!on) return;
   list.querySelectorAll('li.open').forEach(o => { if (o !== li) setOpen(o, false); });
   setTimeout(() => li.scrollIntoView({behavior:'smooth', block:'nearest'}), 320);
@@ -206,12 +266,14 @@ TRACKS.forEach(t => {
        </div>
        <button class="exp" aria-expanded="false" aria-controls="${t.id}-text">
          <span class="t">${esc(t.title)}<small>${esc(t.label)}</small></span>
-         <span class="d">–:––</span>
-         <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="${CHEV}"/></svg>
+         <span class="doc"><span class="lb">逐字稿</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="${CHEV}"/></svg></span>
        </button>
      </div>
-     <div class="seek" role="slider" tabindex="0" aria-label="${esc(t.title)}播放進度"
-          aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="bar"><i></i></div></div>
+     <div class="prog">
+       <div class="seek" role="slider" tabindex="0" aria-label="${esc(t.title)}播放進度"
+            aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="尚未播放"><div class="bar"><i></i></div></div>
+       <span class="d">–:––</span>
+     </div>
      <div class="body" id="${t.id}-text"><div>${paras(t.text)}</div></div>`;
 
   const audio = new Audio(t.src);
@@ -234,6 +296,7 @@ TRACKS.forEach(t => {
     fill.style.width = (r * 100) + '%';
     dur.textContent = ready() ? fmt(audio.duration - t) : '–:––';
     seek.setAttribute('aria-valuenow', Math.round(r * 100));
+    seek.setAttribute('aria-valuetext', ready() ? `${fmt(t)}，全長 ${fmt(audio.duration)}` : '尚未播放');
   };
 
   const jump = sec => {
@@ -282,14 +345,61 @@ TRACKS.forEach(t => {
     jump(step);
   });
 
-  audio.onplay  = () => { path.setAttribute('d',PAUSE); li.classList.add('active'); setOpen(li, true); };
-  audio.onpause = () => { path.setAttribute('d',PLAY);  li.classList.remove('active'); };
+  audio.onplay  = () => {
+    path.setAttribute('d',PAUSE); li.classList.add('active');
+    btn.setAttribute('aria-label', `暫停 ${t.title}`);
+    setOpen(li, true);
+  };
+  audio.onpause = () => {
+    path.setAttribute('d',PLAY); li.classList.remove('active');
+    btn.setAttribute('aria-label', `播放 ${t.title}`);
+  };
   audio.onended = () => { audio.currentTime = 0; draw(0); };
   audio.onloadedmetadata = () => { draw(0); };
   audio.ontimeupdate = () => { if (!dragging) draw(audio.currentTime); };
 
   list.appendChild(li);
 });
+
+// 深色／淺色切換：預設跟著系統走，按了就以手動選擇為準（記在這支手機上）
+const SUN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+  <circle cx="12" cy="12" r="4.2"/>
+  <path d="M12 2.6v2.1M12 19.3v2.1M4.6 4.6l1.5 1.5M17.9 17.9l1.5 1.5M2.6 12h2.1M19.3 12h2.1M4.6 19.4l1.5-1.5M17.9 6.1l1.5-1.5"/>
+</svg>`;
+const MOON = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+  <path d="M20.7 14.7A8.6 8.6 0 0 1 9.3 3.3a8.6 8.6 0 1 0 11.4 11.4z"/>
+</svg>`;
+const root = document.documentElement;
+const themeBtn = document.getElementById('theme');
+const sysDark = matchMedia('(prefers-color-scheme:dark)');
+const isDark = () => {
+  const set = root.getAttribute('data-theme');
+  return set ? set === 'dark' : sysDark.matches;
+};
+const paintTheme = () => {
+  const dark = isDark();
+  themeBtn.innerHTML = (dark ? SUN : MOON) + `<span class="lb">${dark ? '淺色' : '深色'}</span>`;
+  themeBtn.setAttribute('aria-label', dark ? '切換成淺色模式' : '切換成深色模式');
+  document.getElementById('tc').content = dark ? '#17161a' : '#f8f6f1';
+};
+themeBtn.onclick = () => {
+  const next = isDark() ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  try { localStorage.setItem('theme', next); } catch (e) {}
+  paintTheme();
+};
+sysDark.addEventListener('change', paintTheme);
+paintTheme();
+
+// 大字開關：放大整頁字級，選擇會記在這支手機上
+const bigger = document.getElementById('bigger');
+const setBig = on => {
+  root.classList.toggle('big', on);
+  bigger.setAttribute('aria-pressed', on ? 'true' : 'false');
+  try { localStorage.setItem('big', on ? '1' : '0'); } catch (e) {}
+};
+bigger.onclick = () => setBig(!root.classList.contains('big'));
+setBig(root.classList.contains('big'));   // head 裡已先套用，這裡只補上按鈕狀態
 
 // 網址帶 #a3 之類時，展開該區並標示（iOS 不允許自動播放，仍需點一下）
 const hash = location.hash.slice(1);

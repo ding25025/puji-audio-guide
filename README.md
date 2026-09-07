@@ -5,6 +5,23 @@
 - `index.html`　導覽網頁（逐字稿也寫在裡面的 `TRACKS`）
 - `make-audio.sh`　用 [edge-tts](https://github.com/rany2/edge-tts) 產生 `audio1~4.mp3`
 - `audio1~4.mp3`　啟蒙區、歷練區、叛逆區、成長區
+- `make-icon.py`　產生菩提葉圖示（`icon.svg`、`icon-*.png`、`apple-touch-icon.png`）
+- `manifest.webmanifest`　讓手機可以「加入主畫面」，開啟時沒有瀏覽器介面
+
+## 網頁功能
+
+- 播放／暫停、前後跳轉 10 秒、進度條可點可拖
+- 逐字稿預設收合，按「逐字稿」按鈕或開始播放才展開，一次只開一段
+- 深色／淺色切換、大字模式，選擇會記在使用者自己的手機上
+- 鍵盤可全程操作（Tab 移動、Enter 播放、進度條上用左右鍵 ±5 秒），
+  並提供 ARIA 標記、焦點外框、高對比與減少動態的支援
+
+## 重新產生圖示
+
+```bash
+pip install Pillow
+python3 make-icon.py
+```
 
 ## 重新產生語音檔
 
