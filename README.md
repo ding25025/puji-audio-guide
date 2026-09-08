@@ -35,7 +35,7 @@ python3 make-qr.py            # 換網址就在後面加上去：python3 make-qr
 
 | 檔案 | 用途 |
 |---|---|
-| `qr/a1-card.png` | A6 直式卡片 300dpi，可以直接印出來貼在展板上 |
+| `qr/a1-card.png` | 10×10 公分方形卡片 300dpi，可以直接印出來貼在展板上 |
 | `qr/a1.png` | 純 QR，白底，自己排版用 |
 | `qr/a1.svg` | 純 QR 向量圖，印大張不會糊 |
 

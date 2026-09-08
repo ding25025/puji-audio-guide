@@ -7,7 +7,7 @@
 每一站輸出三種檔案到 qr/：
   a1.png        純 QR（去背，方便自己排版）
   a1.svg        純 QR 向量圖（印大張不會糊）
-  a1-card.png   A6 直式卡片 300dpi，可以直接印出來貼在展板上
+  a1-card.png   10×10 公分方形卡片 300dpi，可以直接印出來貼在展板上
 """
 import io, os, re, sys
 import qrcode
@@ -79,36 +79,45 @@ def svg(url, path):
         f'<rect width="{n}" height="{n}" fill="#fff"/><g fill="#{"%02x%02x%02x" % FG}">{rects}</g></svg>\n')
 
 
-def card(url, title, label, path):
-    """A6 直式 300dpi"""
-    W, H = 1240, 1748
+def headphone(d, x, cy, s, color):
+    """耳機圖示：上方頭帶半圓 + 左右兩顆耳罩。x 是左緣，cy 是垂直中心"""
+    r, cw, lw = s*.46, s*.26, max(3, round(s*.11))
+    cx = x + r + cw/2
+    d.arc([cx-r, cy-r, cx+r, cy+r], 180, 360, fill=color, width=lw)
+    for ex in (cx-r, cx+r):
+        d.rounded_rectangle([ex-cw/2, cy-lw/2, ex+cw/2, cy+r], radius=cw/2, fill=color)
+    return 2*r + cw          # 佔用寬度
+
+
+def card(url, num, path):
+    """10×10 公分方形卡片，300dpi = 1181px。上方只留「耳機 語音導覽 NN」，下方留白"""
+    W = H = 1181
     img = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(img)
-    d.rounded_rectangle([28, 28, W-29, H-29], radius=46, outline=GOLD, width=4)
+    d.rounded_rectangle([30, 30, W-31, H-31], radius=44, outline=GOLD, width=4)
 
-    if os.path.exists("icon-192.png"):
-        leaf = Image.open("icon-192.png").convert("RGBA").resize((104, 104), Image.LANCZOS)
-        img.paste(leaf, ((W - 104)//2, 122), leaf)
+    f1, f2 = font(HEITI, 64, 0), font(SONG, 78, 2)
+    t1, cy, s = "語音導覽", 130, 56
+    iw, g1, g2 = s*1.18, 26, 28
+    w1, w2 = d.textlength(t1, font=f1), d.textlength(num, font=f2)
+    x = (W - (iw + g1 + w1 + g2 + w2)) / 2
+    headphone(d, x, cy, s, GOLD)
+    d.text((x + iw + g1, cy), t1, font=f1, fill=FG, anchor="lm")
+    d.text((x + iw + g1 + w1 + g2, cy), num, font=f2, fill=GOLD, anchor="lm")
+    d.text((W/2, 206), "拿起手機掃一掃，聽見這裡的故事", font=font(HEITI, 30, 0), fill=MUTED, anchor="mm")
 
-    d.text((W/2, 300), "小護法養成記", font=font(SONG, 62, 2), fill=FG, anchor="mm")
-    d.text((W/2, 372), "普濟精舍　護博會展覽", font=font(HEITI, 34, 0), fill=MUTED, anchor="mm")
-
-    q = with_logo(qr_image(url, 820))
-    qx, qy = (W - q.width)//2, 470
+    q = with_logo(qr_image(url, 800))
+    qx, qy = (W - q.width)//2, 278
     d.rounded_rectangle([qx-26, qy-26, qx+q.width+25, qy+q.height+25], radius=28, fill=(255, 255, 255))
     img.paste(q, (qx, qy), q)
-
-    d.text((W/2, 1436), label, font=font(HEITI, 40, 0), fill=GOLD, anchor="mm")
-    d.text((W/2, 1532), title, font=font(SONG, 96, 2), fill=FG, anchor="mm")
-    d.text((W/2, 1632), "掃描聆聽語音導覽", font=font(HEITI, 38, 0), fill=MUTED, anchor="mm")
     img.save(path, dpi=(300, 300))
 
 
 os.makedirs(OUT, exist_ok=True)
-for tid, title, label in tracks():
+for i, (tid, title, label) in enumerate(tracks(), 1):
     url = BASE + "#" + tid
     with_logo(qr_image(url, 1200)).save(f"{OUT}/{tid}.png")
     svg(url, f"{OUT}/{tid}.svg")
-    card(url, title, label, f"{OUT}/{tid}-card.png")
-    print(f"{label}　{title}　{url}")
+    card(url, f"{i:02d}", f"{OUT}/{tid}-card.png")
+    print(f"語音導覽 {i:02d}　{title}　{url}")
 print(f"\n完成，檔案在 {OUT}/")
